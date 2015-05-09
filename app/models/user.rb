@@ -35,5 +35,10 @@ class User < ActiveRecord::Base
       errors.add(:phone_number, ERROR_CODE_BY_KEY[:cannot_be_changed]) if self.phone_number_changed?
       errors.add(:deliverer, ERROR_CODE_BY_KEY[:cannot_be_changed]) if self.deliverer_changed?
     end
-  end	
+  end
+
+  def info
+    self.attributes.symbolize_keys.except(:id, :crypted_password, :password_salt, :persistence_token,
+        :single_access_token, :perishable_token, :created_at, :updated_at, :deliverer)
+  end
 end
