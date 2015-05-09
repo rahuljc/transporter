@@ -7,12 +7,19 @@ class User < ActiveRecord::Base
   has_many :devices, :dependent => :destroy
   has_many :requests, :class_name => "Request", :foreign_key => "requester_id", :dependent => :destroy
   accepts_nested_attributes_for :devices, allow_destroy: true
+  has_many :deliverer_payments, :foreign_key => "deliverer_id"
+  has_many :requester_payments, :foreign_key => "requester_id"  
 
 	acts_as_authentic do |c|
 	  c.login_field(:email)
       c.validate_password_field(false)
       c.validate_email_field(false)
 	end
+
+  PAYMENT_STATUSUS = [[:pending, 1],
+                    [:completed, 2]
+                  ]
+  PAYMENT_STATUS_BY_KEY = Hash[*PAYMENT_STATUSUS.map{ |s| [s[0], s[1]] }.flatten]
 
   ERROR_CODES = [
                 [:cannot_be_nil, "1"],
