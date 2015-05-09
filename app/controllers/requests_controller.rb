@@ -65,8 +65,8 @@ class RequestsController < ApplicationController
 	    EngagedDeliverer.destroy_all
 	    Location.destroy_all
 	    Receiver.destroy_all
-	    RequesterPayment.destroy_all
-	    DelivererPayment.destroy_all
+	    # RequesterPayment.destroy_all
+	    # DelivererPayment.destroy_all
 	    respond_to do |format|
 	      format.json {
 	        render :json => {:success => true}
@@ -74,13 +74,30 @@ class RequestsController < ApplicationController
 	    end
     end
 
-	def status
-	    respond_to do |format|
-	      format.json {
-	        render :json => {:message=>"get status from android"}
-	      }
-	    end		
-	end
+  def status
+    success = false
+    message = {}
+    id = params[:id]
+    request = Request.find_by_id(id)
+    receiver = request.receiver
+
+    if request.device and request.device.user
+      message[:success] = true
+      message[:receiver] = {:name => receiver.name, :phone_number => receiver.phone_number,
+                            :order_id => receiver.order_id }
+      message[:deliverer] = request.device.user.info
+      message[:request] = {:id => request.id, :status => request.status, :distance => request.distance}
+    else
+      request.destroy
+      message[:success] = false
+    end
+
+    respond_to do |format|
+      format.json {
+        render :json => message
+      }
+    end
+  end
 
 	private
 
@@ -91,7 +108,7 @@ class RequestsController < ApplicationController
     	end
 
 		def devices_in_range
-	      range = 50
+	      range = 500
 	      unassigned_device_locations = 
 	          CurrentLocation.where({ :updated_at =>
 	              CurrentLocation::TIME_BOUND.seconds.ago.time .. Time.now.utc }).where.not(

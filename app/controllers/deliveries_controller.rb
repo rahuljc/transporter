@@ -48,8 +48,23 @@ class DeliveriesController < ApplicationController
 	    end
 	end
 
-	def pickup
-	end
+  	def picked_up
+    	success = false
+    	@request = @device.requests.where( :id => params[:request][:id],
+                  	:status => Request::STATUS_BY_KEY[:assigned]).first
+    	if @request.present?
+      	@request.status = Request::STATUS_BY_KEY[:picked_up]
+      	success = @request.save
+
+      	send_message if success
+    	end
+
+    	respond_to do |format|
+      	format.json {
+	        render :json => {:success => success}
+      	}
+    	end
+  end
 
 	def delivered
 	end
