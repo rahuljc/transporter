@@ -12,6 +12,13 @@ Rails.application.routes.draw do
     end
   end
 
+  resource :delivery do
+    member do
+      post 'assign'
+      post 'picked_up'
+      post 'delivered'
+    end
+  end
   post '/current_location' => "current_locations#update_location"
   
   # The priority is based upon order of creation: first created -> highest priority.
