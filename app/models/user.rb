@@ -1,4 +1,9 @@
 class User < ActiveRecord::Base
+
+  validates_presence_of :first_name, :last_name, :email, :phone_number
+  validates_uniqueness_of :email, :phone_number
+  validates_uniqueness_of :vehicle_number, :if => :deliverer
+  
 	acts_as_authentic do |c|
 	  c.login_field(:email)
       c.validate_password_field(false)
