@@ -53,10 +53,10 @@ class DeliveriesController < ApplicationController
     	@request = @device.requests.where( :id => params[:request][:id],
                   	:status => Request::STATUS_BY_KEY[:assigned]).first
     	if @request.present?
-      	@request.status = Request::STATUS_BY_KEY[:picked_up]
-      	success = @request.save
+	      	@request.status = Request::STATUS_BY_KEY[:picked_up]
+	      	success = @request.save
 
-      	send_message if success
+	      #	send_message if success
     	end
 
     	respond_to do |format|
@@ -66,8 +66,30 @@ class DeliveriesController < ApplicationController
     	end
   end
 
-	def delivered
-	end
+  def delivered
+    success = false
+
+    @request = @device.requests.where( :id => params[:request][:id],
+                  :status => Request::STATUS_BY_KEY[:picked_up]).first
+    if @request.blank?
+      render :json => {:success => success}
+    elsif @request.receiver.passcode == params[:request][:passcode]
+      @request.status = Request::STATUS_BY_KEY[:delivered]
+      success = @request.save and @request.engaged_deliverer.delete
+      derive_charges
+      respond_to do |format|
+        format.json {
+          render :json => {:success => success}
+        }
+      end
+    else
+      respond_to do |format|
+        format.json {
+          render :json => {:success => false, :error_code => Request::ERROR_BY_KEY[:incorrect_password]}
+        }
+      end
+    end
+  end
 
 	private
 	    def build_device
@@ -82,5 +104,17 @@ class DeliveriesController < ApplicationController
 	        render :json => {:success => false, :error_code => Request::ERROR_BY_KEY[:access_denied]}
 	      end
 	    end	
+
+	    def derive_charges
+	      charge = Charge.first
+	      deliverer_charges = @request.distance * charge.deliverer_rate
+	      requester_charges = @request.distance * charge.requester_rate
+
+	      current_user.deliverer_payments.create(:request_id => @request.id,
+	          :amount => deliverer_charges, :status => User::PAYMENT_STATUS_BY_KEY[:pending])
+	      @request.requester.requester_payments.create(:request_id => @request.id,
+	          :amount => requester_charges, :status => User::PAYMENT_STATUS_BY_KEY[:pending])
+
+	    end	    
 
 end

@@ -108,7 +108,7 @@ class RequestsController < ApplicationController
     	end
 
 		def devices_in_range
-	      range = 500
+	      range = 50
 	      unassigned_device_locations = 
 	          CurrentLocation.where({ :updated_at =>
 	              CurrentLocation::TIME_BOUND.seconds.ago.time .. Time.now.utc }).where.not(
