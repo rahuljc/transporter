@@ -5,12 +5,15 @@ Rails.application.routes.draw do
   delete '/logout' => 'user_sessions#destroy', :as => :logout
 
   resource :user
-  
+
   resources :requests do 
     member do
       get 'status'
     end
   end
+
+  post '/current_location' => "current_locations#update_location"
+  
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
