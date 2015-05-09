@@ -1,6 +1,10 @@
 class Request < ActiveRecord::Base
   belongs_to  :requester, :class_name => "User"
   belongs_to  :device
+  has_one     :receiver, :class_name => "Receiver", :dependent => :destroy
+  has_one     :engaged_deliverer, :dependent => :destroy
+  has_one     :pickup_location, :class_name => "Location", :dependent => :destroy
+  has_one     :drop_location, :class_name => "Location", :dependent => :destroy  
 
   STATUSUS = [
             [:open, 1],

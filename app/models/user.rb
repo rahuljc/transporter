@@ -5,6 +5,8 @@ class User < ActiveRecord::Base
   validates_uniqueness_of :vehicle_number, :if => :deliverer
 
   has_many :devices, :dependent => :destroy
+  has_many :requests, :class_name => "Request", :foreign_key => "requester_id", :dependent => :destroy
+  accepts_nested_attributes_for :devices, allow_destroy: true
 
 	acts_as_authentic do |c|
 	  c.login_field(:email)

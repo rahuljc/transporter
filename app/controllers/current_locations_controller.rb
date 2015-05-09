@@ -6,6 +6,7 @@ class CurrentLocationsController < ApplicationController
 
     if device_uuid and current_user and current_user.deliverer
       device = current_user.devices.find_by_device_uuid(device_uuid)
+      Rails.logger.debug device
       success = device.build_current_location(current_location_params).save if device
     end
     respond_to do |format|
@@ -18,7 +19,7 @@ class CurrentLocationsController < ApplicationController
   private
 
   def current_location_params
-    params.require(:current_location).permit(:lattitude, :longitude)
+    params.require(:current_location).permit(:lattitude, :longitude, :device)
   end
 
 end
