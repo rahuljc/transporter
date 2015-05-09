@@ -1,5 +1,5 @@
 class CreateRequests < ActiveRecord::Migration
-  def change
+  def up
 	create_table :requests do |t|
       t.integer :requester_id
       t.integer :device_id

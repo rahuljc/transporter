@@ -5,11 +5,22 @@ class RequestsController < ApplicationController
   before_action :handle_errors, :only => :create
 
 	def index
+	    if current_user.deliverer
+	      requests = current_user.to_json(:only => [:first_name, :last_name, :email, :phone_number, :address,
+	          :vehicle_number], :include => {:devices => {:include => {:requests => {:include =>
+	          [:receiver, :pickup_location, :drop_location]}}}})
+
+	    else
+	      requests = current_user.to_json(:only => [:first_name, :last_name, :email, :phone_number, :address,
+	          :vehicle_number], :include => {:requests => {:include => [:receiver, :pickup_location,
+	          :drop_location]} })
+	    end
+
 	    respond_to do |format|
 	      format.json {
-	        render :json => {:message=>"All requests"}
+	        render :json => requests
 	      }
-	    end 		
+	    end	
 	end
 
 	def create
@@ -48,13 +59,20 @@ class RequestsController < ApplicationController
 	    end
 	end
 
-	def destroy
+    def destroy
+	    Request.destroy_all
+	    CurrentLocation.destroy_all
+	    EngagedDeliverer.destroy_all
+	    Location.destroy_all
+	    Receiver.destroy_all
+	    RequesterPayment.destroy_all
+	    DelivererPayment.destroy_all
 	    respond_to do |format|
 	      format.json {
-	        render :json => {:message=>"destroy requests"}
+	        render :json => {:success => true}
 	      }
-	    end		
-	end
+	    end
+    end
 
 	def status
 	    respond_to do |format|
@@ -114,7 +132,7 @@ class RequestsController < ApplicationController
 	      calculated_distance = rkm * c
 	      calculated_distance
 	    end
-	    
+
 	    def handle_errors
 	      if current_user.deliverer
 	        render :json => {:success => false, :error_code => Request::ERROR_BY_KEY[:access_denied]}

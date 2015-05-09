@@ -1,5 +1,5 @@
 class CreateUserSessions < ActiveRecord::Migration
-  def change
+  def up
     create_table :user_sessions do |t|
       t.string :session_id, :null => false
       t.text :data
